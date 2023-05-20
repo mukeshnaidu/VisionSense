@@ -3,6 +3,7 @@ import cv2
 from ultralytics import YOLO
 import pandas as pd
 from tracker import *
+import numpy as np
 
 # Yolo Model Initialization
 model = YOLO('../yolov8x.pt')
@@ -25,6 +26,12 @@ cv2.setMouseCallback('VisionSense', points)
 
 tracker = Tracker()
 
+pos_area = [(133, 532), (146, 788), (514, 777), (501, 515)]
+staff_area = [(168, 822), (185, 1068), (515, 1069), (499, 821)]
+
+pos_count = 0
+staff_count = 0
+
 while video.isOpened():
     # frame refers Current Image Frame from Video
     ret, image = video.read()
@@ -43,7 +50,7 @@ while video.isOpened():
     yolov8Results = model.predict(source=image, show=False, stream=True, classes=[0, 63, 64, 66])
 
     for i, (result) in enumerate(yolov8Results):
-        a = result.boxes.boxes
+        a = result.boxes.data
         px = pd.DataFrame(a).astype("float")
 
         # Show Custom Boxes in Each Object Detection
@@ -57,23 +64,40 @@ while video.isOpened():
             y2 = int(row[3])
             d = int(row[5])
             c = class_list[d]
-            objectPositionList.append([x1, y1, x2, y2])
+            objectPositionList.append([x1, y1, x2, y2, d])
 
         boxes_ids = tracker.update(objectPositionList)
+        staff_count = pos_count = 0
 
         for bbox in boxes_ids:
-            x3, y3, x4, y4, boxId = bbox
+            x3, y3, x4, y4, boxId, c = bbox
             cx = int(x3 + x4) // 2
             cy = int(y3 + y4) // 2
-            cv2.rectangle(image, (x3, y3), (x4, y4), (0, 255, 0), 2)
-            cv2.circle(image, (x4, y4), 5, (255, 0, 255), -1)
-            cv2.putText(image, str(int(boxId)), (x3, y3), cv2.FONT_HERSHEY_COMPLEX, 2, (255, 0, 0), 1)
+
+            results = cv2.pointPolygonTest(np.array(pos_area, np.int32), (cx, cy), False)
+
+            if ('laptop' in class_list[c] or 'keyboard' in class_list[c] or 'mouse' in class_list[c]) and results >= 0:
+                cv2.rectangle(image, (x3, y3), (x4, y4), (0, 255, 0), 2)
+                cv2.circle(image, (x4, y4), 5, (255, 0, 255), -1)
+                pos_count = results
+
+            results1 = cv2.pointPolygonTest(np.array(staff_area, np.int32), (cx, cy), False)
+
+            if 'person' in class_list[c] and results1 >= 0:
+                cv2.rectangle(image, (x3, y3), (x4, y4), (0, 255, 0), 2)
+                cv2.circle(image, (x4, y4), 5, (255, 0, 255), -1)
+                staff_count = results1
+
+    cv2.putText(image, str(f'Staff Count: {staff_count}'), (20, 80), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
+    cv2.putText(image, str(f'POS Count: {pos_count}'), (20, 40), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 2)
+    cv2.polylines(image, [np.array(pos_area, np.int32)], True, (0, 0, 255), 3)
+    cv2.polylines(image, [np.array(staff_area, np.int32)], True, (255, 0, 0), 3)
 
     # Show Image
     cv2.imshow('VisionSense', image)
 
     # Exit the loop if 'q' is pressed
-    if cv2.waitKey(0) & 0xFF == ord('q'):
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 video.release()
