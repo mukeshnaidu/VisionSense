@@ -52,7 +52,7 @@ while video.isOpened():
     # yolov8Results = model.predict(image)
 
     # Yolov8 Package Results of each Image Frame Custom Classes
-    yolov8Results = model.predict(source=image, show=False, stream=True, classes=[0, 63, 64, 66])
+    yolov8Results = model.predict(source=image, show=False, stream=True, classes=[0])
 
     for i, (result) in enumerate(yolov8Results):
         a = result.boxes.data
@@ -70,9 +70,9 @@ while video.isOpened():
             y2 = int(y2)
             class_id = int(class_id)
             if score > detection_threshold:
-                detections.append([x1, y1, x2, y2, score])
+                detections.append([x1, y1, x2, y2, score,class_id])
 
-        tracker.update(image, detections, 0)
+        tracker.update(image, detections)
         staff_count = pos_count = 0
 
         for track in tracker.tracks:
@@ -81,22 +81,21 @@ while video.isOpened():
             cx = int(x1 + x2) // 2
             cy = int(y1 + y2) // 2
 
-            cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), (colors[track_id % len(colors)]), 3)
-            cv2.putText(image, str(int(track_id)), (int(x1), int(y1)), cv2.FONT_HERSHEY_COMPLEX, 2, (colors[track_id % len(colors)]), 1)
-
             results = cv2.pointPolygonTest(np.array(pos_area, np.int32), (cx, cy), False)
 
-            # if 'person' in class_list[c] and results >= 0:
-            #     cv2.rectangle(image, (x3, y3), (x4, y4), (0, 255, 0), 2)
-            #     cv2.putText(image, str(int(boxId)), (x3, y3), cv2.FONT_HERSHEY_COMPLEX, 2, (0, 0, 255), 1)
-            #     pos_count += 1
-            #
-            # results1 = cv2.pointPolygonTest(np.array(staff_area, np.int32), (cx, cy), False)
-            #
-            # if 'person' in class_list[c] and results1 >= 0:
-            #     cv2.rectangle(image, (x3, y3), (x4, y4), (0, 255, 0), 2)
-            #     cv2.putText(image, str(int(boxId)), (x3, y3), cv2.FONT_HERSHEY_COMPLEX, 2, (0, 0, 255), 1)
-            #     staff_count += 1
+            if results >= 0:
+                cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), (colors[track_id % len(colors)]), 3)
+                cv2.putText(image, str(int(track_id)), (int(x1), int(y1)), cv2.FONT_HERSHEY_COMPLEX, 2,
+                            (colors[track_id % len(colors)]), 2)
+                pos_count += 1
+
+            results1 = cv2.pointPolygonTest(np.array(staff_area, np.int32), (cx, cy), False)
+
+            if results1 >= 0:
+                cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), (colors[track_id % len(colors)]), 3)
+                cv2.putText(image, str(int(track_id)), (int(x1), int(y1)), cv2.FONT_HERSHEY_COMPLEX, 2,
+                            (colors[track_id % len(colors)]), 2)
+                staff_count += 1
 
 
     cv2.putText(image, str(f'Staff Count: {int(staff_count)}'), (20, 80), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)

@@ -20,11 +20,11 @@ class Tracker:
         self.tracker = DeepSortTracker(metric)
         self.encoder = gdet.create_box_encoder(encoder_model_filename, batch_size=1)
 
-    def update(self, frame, detections, class_name):
-
-        bboxes = np.asarray([d[:-1] for d in detections])
+    def update(self, frame, detections):
+        bboxes = np.asarray([d[:-2] for d in detections])
         bboxes[:, 2:] = bboxes[:, 2:] - bboxes[:, 0:2]
-        scores = [d[-1] for d in detections]
+        scores = [d[-2] for d in detections]
+        class_names = [d[-1] for d in detections]
 
         features = self.encoder(frame, bboxes)
 
@@ -42,7 +42,6 @@ class Tracker:
             if not track.is_confirmed() or track.time_since_update > 1:
                 continue
             bbox = track.to_tlbr()
-
             id = track.track_id
 
             tracks.append(Track(id, bbox))
