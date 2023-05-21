@@ -1,50 +1,59 @@
-import math
+from deep_sort.deep_sort.tracker import Tracker as DeepSortTracker
+from deep_sort.tools import generate_detections as gdet
+from deep_sort.deep_sort import nn_matching
+from deep_sort.deep_sort.detection import Detection
+import numpy as np
 
 
 class Tracker:
+    tracker = None
+    encoder = None
+    tracks = None
+
     def __init__(self):
-        # Store the center positions of the objects
-        self.center_points = {}
-        # Keep the count of the IDs
-        # each time a new object id detected, the count will increase by one
-        self.id_count = 0
+        max_cosine_distance = 0.4
+        nn_budget = None
+
+        encoder_model_filename = '../model_data/mars-small128.pb'
+
+        metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
+        self.tracker = DeepSortTracker(metric)
+        self.encoder = gdet.create_box_encoder(encoder_model_filename, batch_size=1)
+
+    def update(self, frame, detections, class_name):
+
+        bboxes = np.asarray([d[:-1] for d in detections])
+        bboxes[:, 2:] = bboxes[:, 2:] - bboxes[:, 0:2]
+        scores = [d[-1] for d in detections]
+
+        features = self.encoder(frame, bboxes)
+
+        dets = []
+        for bbox_id, bbox in enumerate(bboxes):
+            dets.append(Detection(bbox, scores[bbox_id], features[bbox_id]))
+
+        self.tracker.predict()
+        self.tracker.update(dets)
+        self.update_tracks()
+
+    def update_tracks(self):
+        tracks = []
+        for track in self.tracker.tracks:
+            if not track.is_confirmed() or track.time_since_update > 1:
+                continue
+            bbox = track.to_tlbr()
+
+            id = track.track_id
+
+            tracks.append(Track(id, bbox))
+
+        self.tracks = tracks
 
 
-    def update(self, objects_rect):
-        # Objects boxes and ids
-        objects_bbs_ids = []
+class Track:
+    track_id = None
+    bbox = None
 
-        # Get center point of new object
-        for rect in objects_rect:
-            x, y, w, h, c = rect
-            cx = (x + x + w) // 2
-            cy = (y + y + h) // 2
-
-            # Find out if that object was detected already
-            same_object_detected = False
-            for id, pt in self.center_points.items():
-                dist = math.hypot(cx - pt[0], cy - pt[1])
-
-                if dist < 35:
-                    self.center_points[id] = (cx, cy)
-#                    print(self.center_points)
-                    objects_bbs_ids.append([x, y, w, h, id, c])
-                    same_object_detected = True
-                    break
-
-            # New object is detected we assign the ID to that object
-            if same_object_detected is False:
-                self.center_points[self.id_count] = (cx, cy)
-                objects_bbs_ids.append([x, y, w, h, self.id_count, c])
-                self.id_count += 1
-
-        # Clean the dictionary by center points to remove IDS not used anymore
-        new_center_points = {}
-        for obj_bb_id in objects_bbs_ids:
-            _, _, _, _, object_id, _ = obj_bb_id
-            center = self.center_points[object_id]
-            new_center_points[object_id] = center
-
-        # Update dictionary with IDs not used removed
-        self.center_points = new_center_points.copy()
-        return objects_bbs_ids
+    def __init__(self, id, bbox):
+        self.track_id = id
+        self.bbox = bbox
