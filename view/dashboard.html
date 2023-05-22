@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Netflix-style Auto-play Videos</title>
+  <title>Landmark Vision Sense</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,12 +11,14 @@
 
     .video-container {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
     }
 
     .video-box {
+      position: relative;
       margin: 5px;
-      width: calc(33.33% - 10px); /* Divide the width equally among 3 videos with 5px spacing */
+      width: calc(50% - 10px); /* Divide the width equally among 2 videos in a row with 5px spacing */
       border-radius: 10px; /* Add corner radius of 10 pixels */
       overflow: hidden; /* Clip video to the rounded corners */
     }
@@ -24,6 +26,21 @@
     video {
       width: 100%;
       height: auto;
+    }
+
+    .video-title {
+      position: absolute;
+      top: 10px;
+      left: 15px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #fff;
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 6px;
+      border-radius: 5px;
+      z-index: 1;
+      display: flex;
+      align-items: center;
     }
 
     /* Fullscreen styles */
@@ -36,99 +53,209 @@
       z-index: 9999;
       background-color: #000;
     }
+
+    .popup-video-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 9998;
+      display: none;
+      backdrop-filter: blur(5px);
+    }
+
+    .popup-video {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      height: 80%;
+      z-index: 9999;
+      background-color: #000;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: none;
+    }
+
+    .popup-video-close {
+      position: absolute;
+      top: 5px;
+      right: 20px;
+      font-size: 20px;
+      color: #fff;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+   .video-title i {
+      margin-left: 10px;
+      padding-right: 10px;
+      align-items: center;
+      font-size: 18px; /* Increase the font size of the eye icon */
+    }
+
+    .title{
+          color: #de9801;
+          font-size: 28px;
+          font-weight: bold;
+    }
   </style>
+
+  <!-- Add Font Awesome CDN to use the eye icon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+  <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+  <script defer src="https://pyscript.net/latest/pyscript.js"></script>
 </head>
 <body>
-  <h1>Netflix-style Auto-play Videos</h1>
+  <h1 class="title">Landmark VisionSense</h1>
 
   <div class="video-container">
-    <div class="video-box">
-      <video src="video1.mp4" controls autoplay muted loop></video>
+     <div class="video-box" onclick="showPopup(this)">
+      <div class="video-title">
+        <span>Selfcheckout Area One</span>
+        <i class="fas fa-eye"></i>
+      </div>
+      <video id="video1" controls autoplay muted loop>
+        <source src="http://localhost:8000/selfcheckout.mp4" type="video/mp4">
+      </video>
     </div>
-    <div class="video-box">
-      <video src="video2.mp4" controls autoplay muted loop></video>
+    <div class="video-box" onclick="showPopup(this)">
+      <div class="video-title">
+        <span>Selfcheckout Area Two</span>
+        <i class="fas fa-eye"></i>
+      </div>
+      <video id="video2" controls autoplay muted loop>
+        <source src="http://localhost:8000/dropout.mp4" type="video/mp4">
+      </video>
     </div>
-    <div class="video-box">
-      <video src="video3.mp4" controls autoplay muted loop></video>
+    <div class="video-box" onclick="showPopup(this)">
+      <div class="video-title">
+        <span>Area 3</span>
+        <i class="fas fa-eye"></i>
+      </div>
+      <video id="video3" controls autoplay muted loop>
+        <source src="http://localhost:8000/selfcheckout.mp4" type="video/mp4">
+      </video>
     </div>
-    <!-- Add more video boxes as needed -->
+    <div class="video-box" onclick="showPopup(this)">
+      <div class="video-title">
+        <span>Area 4</span>
+        <i class="fas fa-eye"></i>
+      </div>
+      <video id="video4" controls autoplay muted loop>
+        <source src="http://localhost:8000/selfcheckout.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="video-box" onclick="showPopup(this)">
+      <div class="video-title">
+        <span>Area 5</span>
+        <i class="fas fa-eye"></i>
+      </div>
+      <video id="video5" controls autoplay muted loop>
+        <source src="http://localhost:8000/selfcheckout.mp4" type="video/mp4">
+      </video>    </div>
+    <div class="video-box" onclick="showPopup(this)">
+      <div class="video-title">
+        <span>Area 6</span>
+        <i class="fas fa-eye"></i>
+      </div>
+      <video id="video6" controls autoplay muted loop>
+        <source src="http://localhost:8000/customer.mp4" type="video/mp4">
+      </video>
+    </div>
   </div>
 
-  <script>
-    // Automatically play the next video when the current one ends
-    const videos = document.querySelectorAll('video');
+  <div class="popup-video-overlay" onclick="closePopup()"></div>
+<script>
+    let popupTimeout;
 
-    videos.forEach(video => {
-      video.addEventListener('ended', playNextVideo);
-    });
+    function showPopup(videoBox) {
+      clearTimeout(popupTimeout);
 
-    function playNextVideo() {
-      const currentVideo = this;
-      const nextVideo = currentVideo.parentElement.nextElementSibling?.querySelector('video');
+      popupTimeout = setTimeout(() => {
+        const popup = document.createElement('div');
+        popup.classList.add('popup-video');
 
-      if (nextVideo) {
-        currentVideo.removeEventListener('ended', playNextVideo);
-        nextVideo.play();
-      }
-    }
+        const originalVideo = videoBox.querySelector('video');
+        const source = originalVideo.querySelector('source');
 
-    // Toggle full screen mode on video click
-    videos.forEach(video => {
-      video.addEventListener('click', toggleFullScreen);
-    });
+        const video = document.createElement('video');
+        video.controls = true;
+        video.muted = true;
 
-    function toggleFullScreen() {
-      const video = this;
+        const sourceCopy = document.createElement('source');
+        sourceCopy.src = source.src;
+        sourceCopy.type = source.type;
 
-      if (!document.fullscreenElement) {
-        if (video.requestFullscreen) {
-          video.requestFullscreen();
-        } else if (video.mozRequestFullScreen) { // Firefox
-          video.mozRequestFullScreen();
-        } else if (video.webkitRequestFullscreen) { // Chrome, Safari and Opera
-          video.webkitRequestFullscreen();
-        } else if (video.msRequestFullscreen) { // IE/Edge
-          video.msRequestFullscreen();
-        }
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.mozCancelFullScreen) { // Firefox
-          document.mozCancelFullScreen();
-        } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
-          document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) { // IE/Edge
-          document.msExitFullscreen();
-        }
-      }
-    }
+        video.appendChild(sourceCopy);
 
-    // Adjust video box size on fullscreen change
-    document.addEventListener('fullscreenchange', resizeVideoBoxes);
-    document.addEventListener('mozfullscreenchange', resizeVideoBoxes);
-    document.addEventListener('webkitfullscreenchange', resizeVideoBoxes);
-    document.addEventListener('msfullscreenchange', resizeVideoBoxes);
+        const closeBtn = document.createElement('span');
+        closeBtn.classList.add('popup-video-close');
+        closeBtn.innerHTML = '&#10005;';
+        closeBtn.addEventListener('click', closePopup);
 
-    function resizeVideoBoxes() {
-      const fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+        const title = document.createElement('div');
+        title.classList.add('video-title');
+        title.innerText = videoBox.querySelector('.video-title').innerText;
 
-      if (fullscreenElement) {
-        videos.forEach(video => {
-          if (video !== fullscreenElement) {
-            video.parentElement.style.display = 'none';
+        popup.appendChild(title);
+        popup.appendChild(video);
+        popup.appendChild(closeBtn);
+        document.body.appendChild(popup);
+        document.querySelector('.popup-video-overlay').style.display = 'block';
+        document.body.style.overflow = 'hidden'; /* Hide scrollbars */
+
+        // Save the current video time to Local Storage
+        localStorage.setItem('videoTime', originalVideo.currentTime);
+
+        // Listen for timeupdate event to update the stored time
+        video.addEventListener('timeupdate', () => {
+          localStorage.setItem('videoTime', video.currentTime);
+        });
+
+        // Play the video from the saved time
+        video.addEventListener('loadedmetadata', () => {
+          const savedTime = localStorage.getItem('videoTime');
+          if (savedTime) {
+            video.currentTime = savedTime;
+            video.play();
           }
         });
-      } else {
-        videos.forEach(video => {
-          video.parentElement.style.display = 'block';
-        });
+      });
+    }
+
+    function closePopup() {
+      const popup = document.querySelector('.popup-video');
+      if (popup) {
+        document.body.removeChild(popup);
+        document.querySelector('.popup-video-overlay').style.display = 'none';
+        document.body.style.overflow = ''; /* Restore scrollbars */
       }
     }
 
-    // Start playing the first video
-    if (videos.length > 0) {
-      videos[0].play();
-    }
+    // Check if there is a saved video time and resume playback
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedTime = localStorage.getItem('videoTime');
+      if (savedTime) {
+        const videos = document.querySelectorAll('video');
+        videos.forEach(video => {
+          video.currentTime = savedTime;
+        });
+      }
+    });
+
+    // Clear the saved video time when the page is unloaded
+    window.addEventListener('beforeunload', () => {
+      localStorage.removeItem('videoTime');
+    });
   </script>
 </body>
 </html>

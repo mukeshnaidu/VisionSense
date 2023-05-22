@@ -13,7 +13,7 @@ import datetime
 model = YOLO('../yolov8s.pt')
 
 # Detect and use Live Camera for Video Capture
-video_path = '../assets/Videos/dropout.mp4'
+video_path = '../assets/Videos/customers.mp4'
 video = cv2.VideoCapture(video_path)
 
 # Frame Width and Height
@@ -21,7 +21,7 @@ frame_width = int(video.get(3))
 frame_height = int(video.get(4))
 
 # Define the output video path and properties
-output_path = '/Users/mukeshnaidu/MukeshGit/output/selfcheckout2.mp4'
+output_path = '/Users/mukeshnaidu/MukeshGit/output/customer.mp4'
 output_codec = cv2.VideoWriter_fourcc(*'mp4v')
 output_fps = video.get(cv2.CAP_PROP_FPS)
 output_video = cv2.VideoWriter(output_path, output_codec, output_fps, (frame_width, frame_height))
@@ -37,19 +37,10 @@ cv2.setMouseCallback('VisionSense', points)
 tracker = Tracker()
 colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for j in range(10)]
 
+checkout_area1 = [(817, 23), (1168, 1011), (1590, 968), (1092, 4)]
 
-track_timings = {}
-drop_out = 0
-
-checkout_area1 = [(627, 375), (574, 583), (978, 643), (1001, 407)]
-checkout_area2 = [(569, 602), (530, 752), (957, 813), (971, 656)]
-
-
-camera_id = 1
-camera_name = 'self-checkout'
-
-# Read and process each frame
-frame_count = 0
+# Initialize a dictionary to store the count of track IDs
+track_count = {}
 
 detection_threshold = 0.5
 
@@ -90,6 +81,9 @@ while video.isOpened():
 
         tracker.update(image, detections)
 
+        # Create a set to store the track IDs detected in the current frame
+        current_frame_track_ids = set()
+
         for track in tracker.tracks:
             x1, y1, x2, y2 = track.bbox
             track_id = track.track_id
@@ -97,58 +91,33 @@ while video.isOpened():
             cy = int(y1 + y2) // 2
 
             results = cv2.pointPolygonTest(np.array(checkout_area1, np.int32), (cx, cy), False)
-            frame_count += 1
-
             if results >= 0:
+
                 cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), (colors[track_id % len(colors)]), 3)
                 cv2.putText(image, str(int(track_id)), (int(x1), int(y1)), cv2.FONT_HERSHEY_COMPLEX, 2,
                             (colors[track_id % len(colors)]), 2)
 
-                # Check if the track ID exists in the track timings dictionary
-                if track_id in track_timings:
-                    current_time = time.time()
-                    entry_time = track_timings[track_id]
-                    time_spent = current_time - entry_time
-                    cv2.putText(image, str(f"Zone A : User {track_id} spent {int(time_spent)} sec"),
-                                (1381, 892), cv2.FONT_HERSHEY_COMPLEX, 1,
-                                colors[track_id % len(colors)], 2)
+                # Add the track ID to the set for the current frame
+                current_frame_track_ids.add(track_id)
 
-                    # Save frame information to Excel
-                    # save_frame_info_to_excel(camera_id, camera_name, frame_count, datetime.datetime.now(), time_spent, track_id, 'A')
-
+                # Update the count for each track ID
+                if track_id not in track_count:
+                    track_count[track_id] = 1
                 else:
-                    # Object is new, add it to the track timings dictionary with the current centroid and entry time
-                    track_timings[track_id] = (time.time())
+                    track_count[track_id] = track_count.get(track_id, 0) + 1
 
-            results1 = cv2.pointPolygonTest(np.array(checkout_area2, np.int32), (cx, cy), False)
-
-            if results1 >= 0:
-                cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), (colors[track_id % len(colors)]), 3)
-                cv2.putText(image, str(int(track_id)), (int(x1), int(y1)), cv2.FONT_HERSHEY_COMPLEX, 2,
-                            (colors[track_id % len(colors)]), 2)
-
-                # Check if the track ID exists in the track timings dictionary
-                if track_id in track_timings:
-                    current_time = time.time()
-                    entry_time = track_timings[track_id]
-                    time_spent = current_time - entry_time
-                    cv2.putText(image, str(f"Zone B : User {track_id} spent {int(time_spent)} sec"),
-                                (1381, 986), cv2.FONT_HERSHEY_COMPLEX, 1,
-                                colors[track_id % len(colors)], 2)
-
-                    # Save frame information to Excel
-                    # save_frame_info_to_excel(camera_id, camera_name, frame_count, datetime.datetime.now(), time_spent, track_id, 'B')
-
-                    # Check if the staff area was reached before the position area
-                    if track_id in track_timings and track_timings[track_id] < track_timings.get(track_id, 0):
-                        drop_out += 1
-
-                else:
-                    # Object is new, add it to the track timings dictionary with the current centroid and entry time
-                    track_timings[track_id] = (time.time())
+    # Reduce the count for track IDs that are not detected in the current frame
+        for track_id in list(track_count.keys()):
+            if track_id not in current_frame_track_ids:
+                track_count[track_id] -= 1
+                if track_count[track_id] < 0:
+                    del track_count[track_id]
 
     cv2.polylines(image, [np.array(checkout_area1, np.int32)], True, (0, 0, 255), 3)
-    cv2.polylines(image, [np.array(checkout_area2, np.int32)], True, (255, 0, 0), 3)
+
+    # Display the track ID and count on the image
+    cv2.putText(image, f"Live Customer Count: {len(current_frame_track_ids)}", (35, 719), cv2.FONT_HERSHEY_COMPLEX, 1,
+                (0, 0, 255), 2)
 
     # Write the frame to the output video
     output_video.write(image)
