@@ -1,13 +1,134 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>YOLOv8 Object Detection</title>
+  <title>Netflix-style Auto-play Videos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+
+    .video-container {
+      display: flex;
+      justify-content: center;
+    }
+
+    .video-box {
+      margin: 5px;
+      width: calc(33.33% - 10px); /* Divide the width equally among 3 videos with 5px spacing */
+      border-radius: 10px; /* Add corner radius of 10 pixels */
+      overflow: hidden; /* Clip video to the rounded corners */
+    }
+
+    video {
+      width: 100%;
+      height: auto;
+    }
+
+    /* Fullscreen styles */
+    .fullscreen-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      background-color: #000;
+    }
+  </style>
 </head>
 <body>
-    <h1>YOLOv8 Object Detection</h1>
-    <form method="POST" action="/detect" enctype="multipart/form-data">
-        <input type="file" name="video">
-        <input type="submit" value="Detect">
-    </form>
+  <h1>Netflix-style Auto-play Videos</h1>
+
+  <div class="video-container">
+    <div class="video-box">
+      <video src="video1.mp4" controls autoplay muted loop></video>
+    </div>
+    <div class="video-box">
+      <video src="video2.mp4" controls autoplay muted loop></video>
+    </div>
+    <div class="video-box">
+      <video src="video3.mp4" controls autoplay muted loop></video>
+    </div>
+    <!-- Add more video boxes as needed -->
+  </div>
+
+  <script>
+    // Automatically play the next video when the current one ends
+    const videos = document.querySelectorAll('video');
+
+    videos.forEach(video => {
+      video.addEventListener('ended', playNextVideo);
+    });
+
+    function playNextVideo() {
+      const currentVideo = this;
+      const nextVideo = currentVideo.parentElement.nextElementSibling?.querySelector('video');
+
+      if (nextVideo) {
+        currentVideo.removeEventListener('ended', playNextVideo);
+        nextVideo.play();
+      }
+    }
+
+    // Toggle full screen mode on video click
+    videos.forEach(video => {
+      video.addEventListener('click', toggleFullScreen);
+    });
+
+    function toggleFullScreen() {
+      const video = this;
+
+      if (!document.fullscreenElement) {
+        if (video.requestFullscreen) {
+          video.requestFullscreen();
+        } else if (video.mozRequestFullScreen) { // Firefox
+          video.mozRequestFullScreen();
+        } else if (video.webkitRequestFullscreen) { // Chrome, Safari and Opera
+          video.webkitRequestFullscreen();
+        } else if (video.msRequestFullscreen) { // IE/Edge
+          video.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) { // Firefox
+          document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { // IE/Edge
+          document.msExitFullscreen();
+        }
+      }
+    }
+
+    // Adjust video box size on fullscreen change
+    document.addEventListener('fullscreenchange', resizeVideoBoxes);
+    document.addEventListener('mozfullscreenchange', resizeVideoBoxes);
+    document.addEventListener('webkitfullscreenchange', resizeVideoBoxes);
+    document.addEventListener('msfullscreenchange', resizeVideoBoxes);
+
+    function resizeVideoBoxes() {
+      const fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+
+      if (fullscreenElement) {
+        videos.forEach(video => {
+          if (video !== fullscreenElement) {
+            video.parentElement.style.display = 'none';
+          }
+        });
+      } else {
+        videos.forEach(video => {
+          video.parentElement.style.display = 'block';
+        });
+      }
+    }
+
+    // Start playing the first video
+    if (videos.length > 0) {
+      videos[0].play();
+    }
+  </script>
 </body>
 </html>
