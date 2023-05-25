@@ -178,16 +178,15 @@
 </head>
 <body>
  <!-- New header section -->
-<div class="header">
-  <div class="logo">
-    <img src="http://localhost:8000/logo.svg" alt="Logo" />
-  </div>
-  <h1 class="title">VISION SENSE</h1>
-  <button class="btn-vision-sense" onclick="toggleVisionSense()">Enable Vision Sense</button>
-</div>
-
-  <div class="video-container">
-     <div class="video-box" onclick="showPopup(this)">
+ <div class="header">
+      <div class="logo">
+        <img src="http://localhost:8000/logo.svg" alt="Logo" />
+      </div>
+      <h1 class="title">VISION SENSE</h1>
+      <button class="btn-vision-sense" onclick="toggleVisionSense()">Enable Vision Sense</button>
+ </div>
+ <div class="video-container">
+    <div class="video-box" onclick="showPopup(this)">
       <div class="video-title">
         <span>Selfcheckout Area One</span>
         <i class="fas fa-eye"></i>
@@ -207,7 +206,7 @@
     </div>
     <div class="video-box" onclick="showPopup(this)">
       <div class="video-title">
-        <span>Area 3</span>
+        <span>Customer View from Camera 24</span>
         <i class="fas fa-eye"></i>
       </div>
       <video id="video3" controls autoplay muted loop>
@@ -216,7 +215,7 @@
     </div>
     <div class="video-box" onclick="showPopup(this)">
       <div class="video-title">
-        <span>Area 4</span>
+        <span>POS Counter One - Register 701 </span>
         <i class="fas fa-eye"></i>
       </div>
       <video id="video4" controls autoplay muted loop>
@@ -225,59 +224,261 @@
     </div>
     <div class="video-box" onclick="showPopup(this)">
       <div class="video-title">
-        <span>Area 5</span>
+        <span>POS Counter Two - Register 702 </span>
         <i class="fas fa-eye"></i>
       </div>
       <video id="video5" controls autoplay muted loop>
-        <source src="http://localhost:8000/pos_a_o.mp4" type="video/mp4">
+        <source src="http://localhost:8000/pos_b_o.mp4" type="video/mp4">
       </video>    </div>
     <div class="video-box" onclick="showPopup(this)">
       <div class="video-title">
-        <span>Area 6</span>
+        <span>POS Counter Three - Register 704 </span>
         <i class="fas fa-eye"></i>
       </div>
       <video id="video6" controls autoplay muted loop>
         <source src="http://localhost:8000/pos_c_o.mp4" type="video/mp4">
       </video>
     </div>
-    <div style="display: flex; justify-content: space-around;">
+    <div class="video-box" onclick="showPopup(this)">
+      <div class="video-title">
+        <span>Customer Camera Position 2 </span>
+        <i class="fas fa-eye"></i>
+      </div>
+      <video id="video7" controls autoplay muted loop>
+        <source src="http://localhost:8000/crouded_o.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="video-box" onclick="showPopup(this)">
+      <div class="video-title">
+        <span>Customer Entrance Camera One</span>
+        <i class="fas fa-eye"></i>
+      </div>
+      <video id="video8" controls autoplay muted loop>
+        <source src="http://localhost:8000/entrance_o.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div style="display: flex; justify-content: space-around; auto;">
        <py-config type="json">
         {
-          "packages": ["numpy", "matplotlib"]
+          "packages": ["numpy", "matplotlib","pandas"]
         }
        </py-config>
+
        <!-- Add line plots -->
-        <div>
+        <div style="margin-left: 10px; margin-right: 10px;">
           <div id="line-plot1"></div>
         </div>
-        <div>
+        <div style="margin-left: 10px; margin-right: 10px;">
           <div id="line-plot2"></div>
         </div>
-
        <py-script>
-          import matplotlib.pyplot as plt
-          import numpy as np
-          x = np.random.randn(1000)
-          y = np.random.randn(1000)
-          fig, ax = plt.subplots()
-          ax.scatter(x, y)
-          display(fig, target="line-plot1")
-        </py-script>
+            import matplotlib.pyplot as plt
+            import numpy as np
 
-        <py-script>
-          import matplotlib.pyplot as plt
-          import numpy as np
-          x = np.random.randn(1000)
-          y = np.random.randn(1000)
-          fig, ax = plt.subplots()
-          ax.scatter(x, y)
-          display(fig, target="line-plot2")
+            # Data
+            zone = ['C', 'B', 'A', 'C', 'B', 'A', 'B', 'A', 'C', 'B']
+            time_spent = [3.692647934, 6.467283964, 216.5019071, 5.2937572, 185.7116661, 367.0112813, 1.266955853, 447.2114148,
+                          4.397063971, 92.31470895]
+            dropouts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+            user_info = ['Cust 5', 'Cust 5', 'Cust 5', 'Cust 7', 'Cust 7', 'Cust 7', 'Cust 3', 'Cust 3', 'Cust 4', 'Cust 4']
+
+            # Convert time spent to minutes
+            time_spent = [t / 60 for t in time_spent]
+
+            # Get unique customers and zones
+            unique_customers = np.unique(user_info)
+            unique_zones = np.unique(zone)
+
+            # Creating the bar graph
+            fig, ax = plt.subplots()
+
+            # Defining colors for each zone
+            zone_colors = {'C': 'red', 'B': 'orange', 'A': 'green'}
+
+            # Set the width of each bar
+            bar_width = 0.35
+
+            # Plotting the stacked bars with different colors for each zone
+            for i, zone_name in enumerate(unique_zones):
+                zone_customers = [customer for j, customer in enumerate(user_info) if zone[j] == zone_name]
+                zone_time_spent = [time_spent[j] for j, z in enumerate(zone) if z == zone_name]
+                dropout_flags = [dropouts[j] for j, z in enumerate(zone) if z == zone_name]
+
+                # Calculate the x position for the bars
+                x_pos = np.arange(len(zone_customers))
+
+                # Convert customer labels to strings
+                zone_customers = [str(customer) for customer in zone_customers]
+
+                # Plot the bars for the zone
+                ax.bar(x_pos, zone_time_spent, color=zone_colors[zone_name], label=zone_name)
+
+                # Plot dropout bars separately
+                dropout_time_spent = [time_spent[j] for j, z in enumerate(zone) if z == zone_name and dropouts[j] == 1]
+                dropout_x_pos = [x for j, x in enumerate(x_pos) if zone[j] == zone_name and dropouts[j] == 1]
+                ax.bar(dropout_x_pos, dropout_time_spent, color='red', label='Drop Out')
+
+            # Label the axes and give a title
+            ax.set_xlabel('Customer')
+            ax.set_ylabel('Time Spent (minutes)')
+            ax.set_title('Time Spent by Customers in Different Zones')
+
+            # Set the x-axis tick positions and labels
+            ax.set_xticks(np.arange(len(unique_customers)))
+            ax.set_xticklabels(unique_customers)
+
+            # Create legend for zone colors
+            zone_labels = [plt.Rectangle((0, 0), 1, 1, color=zone_colors[z]) for z in unique_zones]
+            ax.legend(zone_labels, np.append(unique_zones, ['Drop Out']))
+            display(fig, target="line-plot1")
         </py-script>
+       <py-script>
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        # Set random seed for reproducibility
+        np.random.seed(42)
+
+        # Generate random data
+        num_waiting = 13
+        num_counters = 3
+
+        # Generate transaction times until the average waiting time for the last customer is below 60 minutes
+        average_waiting_time = 61
+        while average_waiting_time > 60:
+            transaction_times = np.random.uniform(2, 3, size=num_waiting)
+            waiting_times = np.zeros(num_waiting)
+            for i in range(num_waiting):
+                counter_idx = i % num_counters  # Assign the person to a counter
+                waiting_times[i] = transaction_times[i] + max(0, waiting_times[i - num_counters])
+            average_waiting_time = np.mean(waiting_times)
+
+        # Plotting the bar graph
+        fig, ax = plt.subplots()
+
+        # Plotting the waiting times
+        ax.bar(range(num_waiting), waiting_times, color='skyblue', label='Waiting Time')
+
+        # Label the axes and give a title
+        ax.set_xlabel('Person')
+        ax.set_ylabel('Time (minutes)')
+        ax.set_title('Waiting Time for People in the Queue')
+
+        # Add average waiting time to the graph
+        ax.axhline(average_waiting_time, color='red', linestyle='--', label='Average Waiting Time')
+
+        # Display the average waiting time as text
+        ax.text(num_waiting - 1, average_waiting_time, f'Average: {average_waiting_time:.2f} minutes',
+                horizontalalignment='right', verticalalignment='bottom')
+
+        # Check if average waiting time exceeds 5 minutes
+        if average_waiting_time > 5:
+            notification = 'Notification Sent to Store Manager'
+            ax.axhline(5, color='orange', linestyle='--', label=notification)
+            ax.text(num_waiting - 1, 5, notification,
+                    horizontalalignment='right', verticalalignment='bottom')
+
+        # Set the y-axis limit to a maximum of 60 minutes
+        ax.set_ylim(0, 60)
+
+        # Create legend
+        ax.legend()
+        display(fig, target="line-plot2")
+        </py-script>
+       <py-script>
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import pandas as pd
+
+        # Set random seed for reproducibility
+        np.random.seed(42)
+
+        # Generate dates from May 26, 2023, to May 31, 2023
+        dates = pd.date_range(start='2023-05-26', end='2023-05-31', freq='D')
+
+        # Generate footfall predictions for each date
+        footfall_predictions = [2500, 3000, 3200, 3000, 2300, 1800]
+
+        # Set footfall patterns for each day
+        day_patterns = {
+            'Monday': 'Medium',
+            'Tuesday': 'Medium',
+            'Wednesday': 'Medium',
+            'Thursday': 'Medium',
+            'Friday': 'Peak',
+            'Saturday': 'Peak',
+            'Sunday': 'Peak'
+        }
+
+        # Set peak hours for each day
+        peak_hours = {
+            'Monday': [],
+            'Tuesday': [],
+            'Wednesday': [],
+            'Thursday': [],
+            'Friday': ['4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM'],
+            'Saturday': ['11 AM', '12 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM'],
+            'Sunday': ['11 AM', '12 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM']
+        }
+
+        # Define custom date labels
+        date_labels = ['May 26', 'May 27', 'May 28', 'May 29', 'May 30', 'May 31']
+
+        # Define notification status for each day
+        notification_status = {
+            'May 26': 'Notification Sent',
+            'May 27': 'Pending to Send',
+            'May 28': 'Pending to Send'
+        }
+
+        # Define prediction accuracy information
+        accuracy_info = "Predicted with 82% accuracy based on last 2 years' footfall and sales data"
+
+        # Plotting the prediction graph
+        fig, ax = plt.subplots()
+        # Plotting the footfall predictions
+        ax.plot(range(len(dates)), footfall_predictions, color='skyblue', label='Footfall Predictions')
+
+        # Highlighting peak days and sending notifications to store manager
+        for i, date in enumerate(dates):
+            day_name = date.strftime('%A')
+            if day_name in day_patterns and day_patterns[day_name] == 'Peak':
+                ax.axvline(i, color='orange', linestyle='--', alpha=0.5)
+                if date.strftime('%b %d') in notification_status:
+                    notification_text = notification_status[date.strftime('%b %d')]
+                    ax.annotate(notification_text, xy=(i, footfall_predictions[i]), xytext=(i, footfall_predictions[i] + 100),
+                                rotation=45, horizontalalignment='center', verticalalignment='bottom')
+
+        # Annotating peak hours
+        for i, date in enumerate(dates):
+            day_name = date.strftime('%A')
+            if day_name in peak_hours and day_patterns[day_name] == 'Peak':
+                for hour in peak_hours[day_name]:
+                    ax.annotate(hour, xy=(i, footfall_predictions[i]), xytext=(i, footfall_predictions[i] + 200), rotation=45,
+                                horizontalalignment='center', verticalalignment='bottom')
+
+        # Label the axes and give a title
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Footfall')
+        ax.set_title('Footfall Predictions - May 26, 2023, to May 31, 2023')
+
+        # Set the x-axis tick labels
+        ax.set_xticks(range(len(dates)))
+        ax.set_xticklabels(date_labels)
+
+        # Add a text box with prediction accuracy information
+        ax.text(0.5, 0.95, accuracy_info, transform=ax.transAxes, ha='center', va='center', bbox=dict(facecolor='lightgray', alpha=0.5))
+
+        # Rotate x-axis tick labels for better visibility
+        plt.xticks(rotation=45)
+        display(fig, target="line-plot3")
+        </py-script>
+        </div>
+        <div style="margin-top: 20px;">
+          <div id="line-plot3"></div>
+        </div>
     </div>
-  </div>
-
-
-  <div class="popup-video-overlay" onclick="closePopup()"></div>
+ <div class="popup-video-overlay" onclick="closePopup()"></div>
 <script>
     let popupTimeout;
 
@@ -361,7 +562,7 @@
       localStorage.removeItem('videoTime');
     });
   </script>
- <script>
+<script>
     // Toggle Vision Sense and switch video sources
     function toggleVisionSense() {
       const btnVisionSense = document.querySelector('.btn-vision-sense');
@@ -387,7 +588,9 @@
         'http://localhost:8000/customer_o.mp4',
         'http://localhost:8000/pos_a_o.mp4',
         'http://localhost:8000/pos_b_o.mp4',
-        'http://localhost:8000/pos_c_o.mp4'
+        'http://localhost:8000/pos_c_o.mp4',
+        'http://localhost:8000/crouded_o.mp4',
+        'http://localhost:8000/entrance_o.mp4'
       ];
 
       const videos = document.querySelectorAll('video');
@@ -404,6 +607,6 @@
         video.load();
       });
     }
-  </script>
+ </script>
 </body>
 </html>

@@ -13,7 +13,7 @@ import datetime
 model = YOLO('../yolov8s.pt')
 
 # Detect and use Live Camera for Video Capture
-video_path = '../assets/Videos/customers.mp4'
+video_path = '../assets/Videos/crouded.mp4'
 video = cv2.VideoCapture(video_path)
 
 # Frame Width and Height
@@ -120,7 +120,7 @@ while video.isOpened():
                 (0, 0, 255), 2)
 
     # Write the frame to the output video
-    output_video.write(image)
+    #output_video.write(image)
 
     # Show Image
     cv2.imshow('VisionSense', image)

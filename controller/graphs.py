@@ -1,45 +1,90 @@
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
-# Dummy data
-entry_datetimes = ['08:49.3', '08:49.3', '08:49.3', '09:27.4', '09:27.4', '09:27.4']
-exit_datetimes = ['08:53.0', '08:55.8', '12:25.8', '09:32.7', '12:33.1', '15:34.4']
-time_spent = [3.692647934, 6.467283964, 216.5019071, 5.2937572, 185.7116661, 367.0112813]
-zones = ['C', 'B', 'A', 'C', 'B', 'A']
+# Set random seed for reproducibility
+np.random.seed(42)
 
-# Convert time spent to minutes
-time_spent_minutes = [ts / 60 for ts in time_spent]
+# Generate dates from May 26, 2023, to May 31, 2023
+dates = pd.date_range(start='2023-05-26', end='2023-05-31', freq='D')
 
-# Calculate average waiting time in Zone B to reach Zone A
-zone_b_time = [time_spent_minutes[i] for i, z in enumerate(zones) if z == 'B']
-zone_a_time = [time_spent_minutes[i] for i, z in enumerate(zones) if z == 'A']
-average_waiting_time = sum(zone_b_time) / len(zone_b_time)
+# Generate footfall predictions for each date
+footfall_predictions = [2500, 3000, 3200, 3000, 2300, 1800]
 
-# Calculate total time spent in each zone
-zone_totals = {}
-for zone in set(zones):
-    zone_times = [time_spent_minutes[i] for i, z in enumerate(zones) if z == zone]
-    zone_totals[zone] = sum(zone_times)
+# Set footfall patterns for each day
+day_patterns = {
+    'Monday': 'Medium',
+    'Tuesday': 'Medium',
+    'Wednesday': 'Medium',
+    'Thursday': 'Medium',
+    'Friday': 'Peak',
+    'Saturday': 'Peak',
+    'Sunday': 'Peak'
+}
 
-# Create the plot
-plt.figure(figsize=(10, 6))
+# Set peak hours for each day
+peak_hours = {
+    'Monday': [],
+    'Tuesday': [],
+    'Wednesday': [],
+    'Thursday': [],
+    'Friday': ['4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM'],
+    'Saturday': ['11 AM', '12 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM'],
+    'Sunday': ['11 AM', '12 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM']
+}
 
-# Plot the line graph for each zone
-for zone in set(zones):
-    x = [i for i, z in enumerate(zones) if z == zone]
-    y = [time_spent_minutes[i] for i in x]
-    plt.plot(x, y, label=f'Zone {zone}')
+# Define custom date labels
+date_labels = ['May 26', 'May 27', 'May 28', 'May 29', 'May 30', 'May 31']
 
-# Add data labels with zone totals
-for zone, total_time in zone_totals.items():
-    plt.text(len(zones) - 1, total_time, f'Total Time in Zone {zone}: {total_time:.2f} mins', ha='right', va='bottom')
+# Define notification status for each day
+notification_status = {
+    'May 26': 'Notification Sent',
+    'May 27': 'Pending to Send',
+    'May 28': 'Pending to Send'
+}
 
-plt.xlabel('Data Points')
-plt.ylabel('Number of Users (in minutes)')
-plt.title('User Activity by Zone')
-plt.legend()
-plt.grid(True)
+# Define prediction accuracy information
+accuracy_info = "Predicted with 82% accuracy based on last 2 years' footfall and sales data"
 
-# Display average waiting time in Zone B to reach Zone A
-plt.annotate(f'Average Waiting Time (B to A): {average_waiting_time:.2f} mins', xy=(0.5, 0.1), xycoords='axes fraction', fontsize=12, ha='center')
+# Plotting the prediction graph
+fig, ax = plt.subplots()
 
+# Plotting the footfall predictions
+ax.plot(range(len(dates)), footfall_predictions, color='skyblue', label='Footfall Predictions')
+
+# Highlighting peak days and sending notifications to store manager
+for i, date in enumerate(dates):
+    day_name = date.strftime('%A')
+    if day_name in day_patterns and day_patterns[day_name] == 'Peak':
+        ax.axvline(i, color='orange', linestyle='--', alpha=0.5)
+        if date.strftime('%b %d') in notification_status:
+            notification_text = notification_status[date.strftime('%b %d')]
+            ax.annotate(notification_text, xy=(i, footfall_predictions[i]), xytext=(i, footfall_predictions[i] + 100),
+                        rotation=45, horizontalalignment='center', verticalalignment='bottom')
+
+# Annotating peak hours
+for i, date in enumerate(dates):
+    day_name = date.strftime('%A')
+    if day_name in peak_hours and day_patterns[day_name] == 'Peak':
+        for hour in peak_hours[day_name]:
+            ax.annotate(hour, xy=(i, footfall_predictions[i]), xytext=(i, footfall_predictions[i] + 200), rotation=45,
+                        horizontalalignment='center', verticalalignment='bottom')
+
+# Label the axes and give a title
+ax.set_xlabel('Date')
+ax.set_ylabel('Footfall')
+ax.set_title('Footfall Predictions - May 26, 2023, to May 31, 2023')
+
+# Set the x-axis tick labels
+ax.set_xticks(range(len(dates)))
+ax.set_xticklabels(date_labels)
+
+# Add a text box with prediction accuracy information
+ax.text(0.5, 0.95, accuracy_info, transform=ax.transAxes, ha='center', va='center', bbox=dict(facecolor='lightgray', alpha=0.5))
+
+# Rotate x-axis tick labels for better visibility
+plt.xticks(rotation=45)
+
+# Display the graph
+plt.tight_layout()
 plt.show()
