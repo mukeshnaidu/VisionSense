@@ -106,6 +106,62 @@
           font-size: 28px;
           font-weight: bold;
     }
+
+      /* New styles for the header */
+    .header {
+     display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: #333;
+    }
+
+    .logo img {
+  width: 40px; /* Adjust the width as needed */
+  height: auto;
+}
+
+.title {
+  color: #ca8a03;
+  font-size: 24px;
+  margin: 0;
+  text-align: center;
+  flex-grow: 1;
+}
+
+    .header h1 {
+      color: #fff;
+      font-size: 24px;
+      margin: 0;
+    }
+
+    .btn-vision-sense {
+      background-color: #de9801;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-vision-sense.disabled {
+      background-color: #999;
+    }
+
+    /* New styles for line plots */
+    .line-plot {
+      margin: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Adjust the size of the line plots as needed */
+    .line-plot canvas {
+      width: 400px;
+      height: 300px;
+    }
+
   </style>
 
   <!-- Add Font Awesome CDN to use the eye icon -->
@@ -113,9 +169,22 @@
 
   <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
   <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+
+ <!-- Add Matplotlib dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.0.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/matplotlib-inline@0.1.2/dist/matplotlib-inline.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mpld3@0.5.2/dist/mpld3.min.js"></script>
+
 </head>
 <body>
-  <h1 class="title">Landmark VisionSense</h1>
+ <!-- New header section -->
+<div class="header">
+  <div class="logo">
+    <img src="http://localhost:8000/logo.svg" alt="Logo" />
+  </div>
+  <h1 class="title">VISION SENSE</h1>
+  <button class="btn-vision-sense" onclick="toggleVisionSense()">Enable Vision Sense</button>
+</div>
 
   <div class="video-container">
      <div class="video-box" onclick="showPopup(this)">
@@ -124,7 +193,7 @@
         <i class="fas fa-eye"></i>
       </div>
       <video id="video1" controls autoplay muted loop>
-        <source src="http://localhost:8000/selfcheckout.mp4" type="video/mp4">
+        <source src="http://localhost:8000/ssco_o.mp4" type="video/mp4">
       </video>
     </div>
     <div class="video-box" onclick="showPopup(this)">
@@ -133,7 +202,7 @@
         <i class="fas fa-eye"></i>
       </div>
       <video id="video2" controls autoplay muted loop>
-        <source src="http://localhost:8000/dropout.mp4" type="video/mp4">
+        <source src="http://localhost:8000/dropout_o.mp4" type="video/mp4">
       </video>
     </div>
     <div class="video-box" onclick="showPopup(this)">
@@ -142,7 +211,7 @@
         <i class="fas fa-eye"></i>
       </div>
       <video id="video3" controls autoplay muted loop>
-        <source src="http://localhost:8000/selfcheckout.mp4" type="video/mp4">
+        <source src="http://localhost:8000/customer_o.mp4" type="video/mp4">
       </video>
     </div>
     <div class="video-box" onclick="showPopup(this)">
@@ -151,7 +220,7 @@
         <i class="fas fa-eye"></i>
       </div>
       <video id="video4" controls autoplay muted loop>
-        <source src="http://localhost:8000/selfcheckout.mp4" type="video/mp4">
+        <source src="http://localhost:8000/pos_a_o.mp4" type="video/mp4">
       </video>
     </div>
     <div class="video-box" onclick="showPopup(this)">
@@ -160,7 +229,7 @@
         <i class="fas fa-eye"></i>
       </div>
       <video id="video5" controls autoplay muted loop>
-        <source src="http://localhost:8000/selfcheckout.mp4" type="video/mp4">
+        <source src="http://localhost:8000/pos_b_o.mp4" type="video/mp4">
       </video>    </div>
     <div class="video-box" onclick="showPopup(this)">
       <div class="video-title">
@@ -168,10 +237,45 @@
         <i class="fas fa-eye"></i>
       </div>
       <video id="video6" controls autoplay muted loop>
-        <source src="http://localhost:8000/customer.mp4" type="video/mp4">
+        <source src="http://localhost:8000/pos_c_o.mp4" type="video/mp4">
       </video>
     </div>
+    <div style="display: flex; justify-content: space-around;">
+       <py-config type="json">
+        {
+          "packages": ["numpy", "matplotlib"]
+        }
+       </py-config>
+       <!-- Add line plots -->
+        <div>
+          <div id="line-plot1"></div>
+        </div>
+        <div>
+          <div id="line-plot2"></div>
+        </div>
+
+       <py-script>
+          import matplotlib.pyplot as plt
+          import numpy as np
+          x = np.random.randn(1000)
+          y = np.random.randn(1000)
+          fig, ax = plt.subplots()
+          ax.scatter(x, y)
+          display(fig, target="line-plot1")
+        </py-script>
+
+        <py-script>
+          import matplotlib.pyplot as plt
+          import numpy as np
+          x = np.random.randn(1000)
+          y = np.random.randn(1000)
+          fig, ax = plt.subplots()
+          ax.scatter(x, y)
+          display(fig, target="line-plot2")
+        </py-script>
+    </div>
   </div>
+
 
   <div class="popup-video-overlay" onclick="closePopup()"></div>
 <script>
@@ -256,6 +360,50 @@
     window.addEventListener('beforeunload', () => {
       localStorage.removeItem('videoTime');
     });
+  </script>
+ <script>
+    // Toggle Vision Sense and switch video sources
+    function toggleVisionSense() {
+      const btnVisionSense = document.querySelector('.btn-vision-sense');
+
+      if (btnVisionSense.classList.contains('disabled')) {
+        // Enable Vision Sense
+        btnVisionSense.innerText = 'Enable Vision Sense';
+        btnVisionSense.classList.remove('disabled');
+        updateVideoSources('enable');
+      } else {
+        // Disable Vision Sense
+        btnVisionSense.innerText = 'Disable Vision Sense';
+        btnVisionSense.classList.add('disabled');
+        updateVideoSources('disable');
+      }
+    }
+
+    // Update video sources based on Vision Sense status
+    function updateVideoSources(action) {
+      const videoSources = [
+        'http://localhost:8000/ssco_o.mp4',
+        'http://localhost:8000/dropout_o.mp4',
+        'http://localhost:8000/pos_a_o.mp4',
+        'http://localhost:8000/pos_b_o.mp4',
+        'http://localhost:8000/pos_c_o.mp4',
+        'http://localhost:8000/customer_o.mp4'
+      ];
+
+      const videos = document.querySelectorAll('video');
+      videos.forEach((video, index) => {
+        const source = video.querySelector('source');
+        if (action === 'enable') {
+          // Switch to new video source
+          source.src = videoSources[index];
+        } else {
+          // Switch back to original video source
+          source.src = videoSources[index].replace('_o.mp4', '.mp4');
+        }
+
+        video.load();
+      });
+    }
   </script>
 </body>
 </html>
