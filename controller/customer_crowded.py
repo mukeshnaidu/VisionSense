@@ -7,8 +7,8 @@ import pandas as pd
 import numpy as np
 from tracker import Tracker
 import random
-import time
-import datetime
+import threading
+
 
 # Yolo Model Initialization
 model = YOLO('../yolov8s.pt')
@@ -64,7 +64,7 @@ while video.isOpened():
     frame_count += 1
 
     # Resize Image according to the requirements
-    image = cv2.resize(image, (1920, 1080))
+    #image = cv2.resize(image, (1920, 1080))
 
     # Yolov8 Package Results of each Image Frame
     # yolov8Results = model.predict(image)
@@ -148,7 +148,9 @@ while video.isOpened():
     text_message = 'It appears that there is a large crowd, and one of the points of sale (POS) is not active. To minimize the average waiting time, kindly organize a cashier to assist.'
     if frame_count >= 100 and len(current_frame_track_ids) >= 5 and notificationSent == 0:
         file_path = f"/Users/mukeshnaidu/MukeshGit/output/ssco_croud.jpg"
-        send_whatsapp_message(account_sid, auth_token, from_number, to_number, text_message, image_path)
+        whatsapp_thread = threading.Thread(target= send_whatsapp_message, args=(
+        account_sid, auth_token, from_number, to_number, text_message, image_path))
+        whatsapp_thread.start()
         notificationSent = 1
         # cv2.imwrite(file_path, image)
 

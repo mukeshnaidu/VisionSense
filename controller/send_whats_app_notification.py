@@ -21,8 +21,8 @@ to_number = '+971529123587'
 text_message = 'Today, we have achieved an 80% accuracy rate in predicting the footfall, which amounts to 3,230 visitors. We anticipate the crowd to be more active between 11 AM and 12 PM and between 5 PM and 9 PM. To ensure effective staff management, please be prepared to allocate appropriate resources during these time frames.'
 text_message1 = 'There seems to be a significant gathering, with all the points of sale (POS) currently operational. It is advised to initiate the utilization of Q-Buster in the SSM.'
 
-send_whatsapp_text_message(account_sid, auth_token, from_number, to_number, text_message)
-send_whatsapp_text_message(account_sid, auth_token, from_number, to_number, text_message1)
+# send_whatsapp_text_message(account_sid, auth_token, from_number, to_number, text_message)
+# send_whatsapp_text_message(account_sid, auth_token, from_number, to_number, text_message1)
 
 
 

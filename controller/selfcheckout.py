@@ -90,6 +90,17 @@ while video.isOpened():
 
     cv2.putText(image, str(f'Staff Count: {int(staff_count)}'), (20, 80), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
     cv2.putText(image, str(f'POS Count: {int(pos_count)}'), (20, 40), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 2)
+
+
+    cv2.putText(image, f"Notification Triggered to manager : {0}", (35, 919),
+                    cv2.FONT_HERSHEY_COMPLEX, 1,
+                    (245, 248, 252), 2)
+
+    cv2.putText(image, f"Average Waiting Time : {averageWaitingTime} minutes", (35, 1019),
+                cv2.FONT_HERSHEY_COMPLEX, 1,
+                (245, 248, 252), 2)
+
+
     cv2.polylines(image, [np.array(pos_area, np.int32)], True, (0, 0, 255), 3)
     cv2.polylines(image, [np.array(staff_area, np.int32)], True, (255, 0, 0), 3)
 
