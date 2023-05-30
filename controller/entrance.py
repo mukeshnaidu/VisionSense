@@ -45,7 +45,7 @@ tracker = Tracker()
 colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for j in range(10)]
 
 area1 = [(1589, 402), (1682, 1049), (1699, 1052), (1607, 389)]
-area2 = [(872, 167), (912, 487), (919, 488), (877, 168)]
+# area2 = [(872, 167), (912, 487), (919, 488), (877, 168)]
 
 customerIn = 0
 customerOut = 3
@@ -62,18 +62,20 @@ while video.isOpened():
     if not ret:
         break
 
+    output_video.write(image)
+
     # Increment the frame counter
     frame_count += 1
 
     # Yolov8 Package Results of each Image Frame Custom Classes
-    yolov8Results = model.predict(source=image, show=False, stream=False, classes=[0])
+    yolov8Results = model.predict(source=image, show=True, stream=False, classes=[0])
 
     cv2.polylines(image, [np.array(area1, np.int32)], True, (255, 0, 0), 2)
     cv2.putText(image, f'Customer IN: {int(customerIn)}', (845, 35), cv2.FONT_HERSHEY_COMPLEX, 0.5, (245, 248, 252), 1)
 
-    cv2.polylines(image, [np.array(area2, np.int32)], True, (255, 0, 255), 2)
-    cv2.putText(image, f'Customer OUT: {int(customerOut)}', (845, 65), cv2.FONT_HERSHEY_COMPLEX, 0.5, (245, 248, 252),
-                1)
+    # cv2.polylines(image, [np.array(area2, np.int32)], True, (255, 0, 255), 2)
+    # cv2.putText(image, f'Customer OUT: {int(customerOut)}', (845, 65), cv2.FONT_HERSHEY_COMPLEX, 0.5, (245, 248, 252),
+    #             1)
 
     # Write the frame to the output video
     output_video.write(image)

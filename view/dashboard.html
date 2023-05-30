@@ -145,6 +145,17 @@
       cursor: pointer;
     }
 
+     .btn-view-dashboard {
+      background-color: #de9801;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      margin-right: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
     .btn-vision-sense.disabled {
       background-color: #999;
     }
@@ -161,6 +172,15 @@
       width: 400px;
       height: 300px;
     }
+
+    .graphs {
+    display: none;
+    }
+
+    .graphs1 {
+    display: none;
+    }
+
 
   </style>
 
@@ -183,7 +203,8 @@
         <img src="http://localhost:8000/logo.svg" alt="Logo" />
       </div>
       <h1 class="title">VISION SENSE</h1>
-      <button class="btn-vision-sense" onclick="toggleVisionSense()">Enable Vision Sense</button>
+       <button class="btn-view-dashboard" onclick="navigateToDashboard()" style="display: none;">View Report</button>
+       <button class="btn-vision-sense" onclick="toggleVisionSense()">Enable Vision Sense</button>
  </div>
  <div class="video-container">
     <div class="video-box" onclick="showPopup(this)">
@@ -257,7 +278,7 @@
         <source src="http://localhost:8000/entrance_o.mp4" type="video/mp4">
       </video>
     </div>
-    <div style="display: flex; justify-content: space-around; auto;">
+    <div class="graphs" style="justify-content: space-around; auto;">
        <py-config type="json">
         {
           "packages": ["numpy", "matplotlib","pandas"]
@@ -474,9 +495,9 @@
         display(fig, target="line-plot3")
         </py-script>
         </div>
-        <div style="margin-top: 20px;">
-          <div id="line-plot3"></div>
-        </div>
+    <div class="graphs1" style="margin-top: 20px;">
+        <div id="line-plot3"></div>
+    </div>
     </div>
  <div class="popup-video-overlay" onclick="closePopup()"></div>
 <script>
@@ -566,18 +587,33 @@
     // Toggle Vision Sense and switch video sources
     function toggleVisionSense() {
       const btnVisionSense = document.querySelector('.btn-vision-sense');
+      var btnViewDashboard = document.querySelector(".btn-view-dashboard");
+      var graphs = document.querySelector('.graphs');
+      var graphs1 = document.querySelector('.graphs1');
 
       if (btnVisionSense.classList.contains('disabled')) {
         // Enable Vision Sense
         btnVisionSense.innerText = 'Enable Vision Sense';
         btnVisionSense.classList.remove('disabled');
         updateVideoSources('enable');
+        btnViewDashboard.style.display = "none" ;
+        graphs.style.display = 'none';
+        graphs1.style.display = 'none';
       } else {
         // Disable Vision Sense
         btnVisionSense.innerText = 'Disable Vision Sense';
         btnVisionSense.classList.add('disabled');
         updateVideoSources('disable');
+        btnViewDashboard.style.display = "block";
+        graphs.style.display = 'flex';
+        graphs1.style.display = "block";
+
       }
+    }
+
+     function navigateToDashboard() {
+        var dashboardLink = "https://tinyurl.com/visionSense";
+        window.open(dashboardLink, "_blank");
     }
 
     // Update video sources based on Vision Sense status

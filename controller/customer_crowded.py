@@ -146,7 +146,7 @@ while video.isOpened():
     to_number = '+971529123587'
     image_path = 'https://firebasestorage.googleapis.com/v0/b/landmarkhackathon.appspot.com/o/ssco_croud.jpg?alt=media&token=d98d0c88-bd58-4df0-9dc5-0666b95b72f5'
     text_message = 'It appears that there is a large crowd, and one of the points of sale (POS) is not active. To minimize the average waiting time, kindly organize a cashier to assist.'
-    if frame_count >= 100 and len(current_frame_track_ids) >= 5 and notificationSent == 0:
+    if frame_count >= 15 and len(current_frame_track_ids) >= 5 and notificationSent == 0:
         file_path = f"/Users/mukeshnaidu/MukeshGit/output/ssco_croud.jpg"
         whatsapp_thread = threading.Thread(target= send_whatsapp_message, args=(
         account_sid, auth_token, from_number, to_number, text_message, image_path))
